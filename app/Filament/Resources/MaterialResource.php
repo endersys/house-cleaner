@@ -5,15 +5,21 @@ namespace App\Filament\Resources;
 use App\Enums\MaterialStatusEnum;
 use App\Filament\Resources\MaterialResource\Pages;
 use App\Models\Material;
-use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Form;
+use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
-use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
 
 class MaterialResource extends Resource
 {
@@ -52,12 +58,24 @@ class MaterialResource extends Resource
                     ->label('Categorias')
                     ->multiple()
                     ->relationship('categories', 'name')
-                    ->preload(),
+                    ->preload()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label('Nome')
+                            ->required(),
+                    ])
+                    ->createOptionModalHeading('Nova Categoria'),
                 Select::make('suppliers')
                     ->label('Fornecedores')
                     ->multiple()
                     ->relationship('suppliers', 'name')
-                    ->preload(),
+                    ->preload()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label('Nome')
+                            ->required(),
+                    ])
+                    ->createOptionModalHeading('Novo Fornecedor'),
                 TextInput::make('stock')
                     ->label('Quantidade')
                     ->numeric()
@@ -80,14 +98,15 @@ class MaterialResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nome')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('price')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('price')
                     ->prefix(fn () => config('app.locale') === 'pt_BR' ? 'R$' : '$')
                     ->label('Preço')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stock.quantity')
+                TextColumn::make('stock.quantity')
                     ->formatStateUsing(function (string $state, $record) {
                         $quantity = $state . ' ' . config('units.' . $record->measurement_unit);
                
@@ -95,33 +114,65 @@ class MaterialResource extends Resource
                     })
                     ->label('Quantidade')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('reference')
+                TextColumn::make('reference')
                     ->label('Referencia')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('expiration_date')
+                TextColumn::make('expiration_date')
                     ->label('Data de vencimento')
                     ->dateTime('d/m/Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('shelf')
+                TextColumn::make('shelf')
                     ->label('Prateleira')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                BadgeColumn::make('status')
                     ->enum([
                         MaterialStatusEnum::Active->value => 'Ativo',
                         MaterialStatusEnum::Inactive->value => 'Inativo'
                     ])
+                    ->colors([
+                        'success' => MaterialStatusEnum::Active->value,
+                        'danger' => MaterialStatusEnum::Inactive->value,
+                    ])
                     ->label('Status')
-                    ->sortable(),
+                    ->sortable()
+                    ->action(
+                        Action::make('updateStatus')
+                            ->label('Atualizar Status')
+                            ->mountUsing(fn (Forms\ComponentContainer $form, Material $record) => $form->fill([
+                                'status' => $record->status,
+                            ]))
+                            ->action(function (Material $record, array $data): void {
+                                $record->update([
+                                    'status' => data_get($data, 'status')
+                                ]);
+                            })
+                            ->form([
+                                Select::make('status')
+                                    ->label('Status')
+                                    ->options([
+                                        MaterialStatusEnum::Active->value => 'Ativo',
+                                        MaterialStatusEnum::Inactive->value => 'Inativo'
+                                    ])
+                                    ->required(),
+                            ])
+                            ->modalWidth('md')
+                            ->modalHeading('Atualizar Status')
+                            ->modalButton('Salvar')
+                            ->icon('heroicon-o-refresh')
+                    )
+                    ->tooltip('Clique para editar o status'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ])
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                DeleteBulkAction::make(),
             ]);
     }
     

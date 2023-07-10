@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'un' => 'UN',
+    'un' => 'UNIDADE',
     'kg' => 'KG',
     'l' => 'LITRO',
     'ml' => 'ML',
