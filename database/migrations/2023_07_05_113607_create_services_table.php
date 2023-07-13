@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('status')->default(ServiceStatusEnum::Pending->value);
             $table->string('price')->nullable();
             $table->string('type')->nullable();
-            $table->date('started_at')->nullable();
-            $table->date('finished_at')->nullable();
+            $table->time('started_at')->nullable();
+            $table->time('finished_at')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
         });

@@ -7,6 +7,7 @@ use App\Models\Service;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
@@ -17,6 +18,8 @@ class ServiceResource extends Resource
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
+
+    protected static ?string $navigationGroup = 'Cadastros';
 
     protected static ?string $pluralModelLabel = 'serviços';
 
@@ -40,12 +43,14 @@ class ServiceResource extends Resource
                     ->label('Data do serviço')
                     ->displayFormat('d/m/Y')
                     ->minDate(now()),
-                DatePicker::make('started_at')
-                    ->label('Data do início')
-                    ->displayFormat('d/m/Y'),
-                DatePicker::make('finished_at')
-                    ->label('Data do término')
-                    ->displayFormat('d/m/Y'),
+                TimePicker::make('started_at')
+                    ->label('Hora do início')
+                    ->withoutSeconds()
+                    ->default(0),
+                TimePicker::make('finished_at')
+                    ->label('Hora do término')
+                    ->withoutSeconds()
+                    ->default(0),
             ])
             ->columns(3);
     }

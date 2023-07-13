@@ -15,9 +15,9 @@ return new class extends Migration
         Schema::create('periodics', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(House::class)->constrained()->cascadeOnDelete();
-            $table->string('periodicity');
+            $table->string('periodicity')->nullable();
             $table->boolean('can_alert')->default(true);
-            $table->date('next_service_date');
+            $table->date('next_service_date')->nullable();
             $table->timestamps();
         });
     }
