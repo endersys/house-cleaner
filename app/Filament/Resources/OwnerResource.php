@@ -41,7 +41,7 @@ class OwnerResource extends Resource
                     ->email()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
-                    ->mask(fn (Mask $mask) => $mask->pattern('(000)00000-00-00'))
+                    ->mask(fn (Mask $mask) => $mask->pattern('(000)0 0000-00-00'))
                     ->label('Telefone')
                     ->tel()
                     ->maxLength(255),
@@ -65,14 +65,17 @@ class OwnerResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome'),
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Email'),
+                    ->label('Email')
+                    ->icon('heroicon-o-mail'),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telefone'),
+                    ->label('Telefone')
+                    ->icon('heroicon-o-phone'),
                 Tables\Columns\ToggleColumn::make('is_client')
                     ->label('É cliente?'),
                 Tables\Columns\TextColumn::make('houses_count')
                     ->label('Número de casas')
-                    ->counts('houses'),
+                    ->counts('houses')
+                    ->icon('heroicon-o-home'),
                 BadgeColumn::make('status')
                     ->enum([
                         ClientStatusEnum::Active->value => 'Ativo',
@@ -109,6 +112,7 @@ class OwnerResource extends Resource
                             ->modalButton('Salvar')
                             ->icon('heroicon-o-refresh')
                     )
+                    ->alignCenter()
                     ->tooltip('Clique para editar o status'),
             ])
             ->filters([

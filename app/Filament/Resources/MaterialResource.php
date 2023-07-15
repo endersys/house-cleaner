@@ -105,9 +105,10 @@ class MaterialResource extends Resource
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('price')
-                    ->prefix(fn () => config('app.locale') === 'pt_BR' ? 'R$' : '$')
+                    // ->prefix(fn () => config('app.locale') === 'pt_BR' ? 'R$' : '$')
                     ->label('Preço')
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-o-cash'),
                 TextColumn::make('stock.quantity')
                     ->formatStateUsing(function (string $state, $record) {
                         $quantity = $state . ' ' . config('units.' . $record->measurement_unit);
@@ -122,10 +123,12 @@ class MaterialResource extends Resource
                 TextColumn::make('expiration_date')
                     ->label('Data de vencimento')
                     ->dateTime('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-o-calendar'),
                 TextColumn::make('shelf')
                     ->label('Prateleira')
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-o-table'),
                 BadgeColumn::make('status')
                     ->enum([
                         MaterialStatusEnum::Active->value => 'Ativo',

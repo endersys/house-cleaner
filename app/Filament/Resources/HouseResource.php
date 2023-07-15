@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\HouseStatusEnum;
 use App\Filament\Resources\HouseResource\Pages;
-use App\Forms\Components\SimpleLabel;
+use App\Filament\Resources\HouseResource\RelationManagers\ServicesRelationManager;
 use App\Models\House;
 use App\Models\Owner;
 use Filament\Forms;
@@ -18,7 +18,6 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\ViewField;
 use Illuminate\Support\HtmlString;
 
 class HouseResource extends Resource
@@ -101,8 +100,12 @@ class HouseResource extends Resource
                             ->schema([
                                 Forms\Components\Placeholder::make('')
                                     ->content(
-                                        new HtmlString("
-                                            <small style='color: red'>*A data do próximo serviço será gerada automaticamente com base na data de finalização do último serviço.</small>"
+                                        new HtmlString(
+                                            "<small 
+                                                class='custom-color-danger'
+                                            >
+                                                *A data do próximo serviço será gerada automaticamente com base na data de finalização do último serviço.
+                                            </small>"
                                         )
                                     ),
                             ]),
@@ -131,7 +134,7 @@ class HouseResource extends Resource
 
                         return true;
                     })
-            ]);
+                ]);
     }
 
     public static function table(Table $table): Table
@@ -139,7 +142,8 @@ class HouseResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('owner.name')
-                    ->label('Proprietário'),
+                    ->label('Proprietário')
+                    ->icon('heroicon-o-user'),
                 Tables\Columns\TextColumn::make('number')
                     ->label('Número'),
                 Tables\Columns\TextColumn::make('street')
@@ -234,7 +238,7 @@ class HouseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ServicesRelationManager::class,
         ];
     }
     
