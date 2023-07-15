@@ -1,0 +1,20 @@
+@import '../../vendor/filament/filament/resources/css/app.css';
+
+.custom-bg-lightskyblue {
+    background-color: #b2e2ff;
+    color: #006caa;
+}
+
+.custom-bg-warning {
+    background-color: #f4ca66;
+    color: #936804;
+}
+
+.custom-bg-violet {
+    background-color: #f4c1f4;
+    color: #ef34ef;
+}
+
+.custom-color-danger {
+    color: red;
+}
