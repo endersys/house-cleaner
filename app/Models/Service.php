@@ -34,6 +34,6 @@ class Service extends Model
     }
 
     public function materials() {
-        return $this->belongsToMany(Material::class);
+        return $this->hasMany(MaterialService::class);
     }
 }
