@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\ViewColumn;
 use Illuminate\Database\Eloquent\Model;
 
 class ServiceResource extends Resource
@@ -153,9 +154,9 @@ class ServiceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('house.owner.name')
+                ViewColumn::make('house.owner.name')
                     ->label('Proprietário')
-                    ->icon('heroicon-o-user'),
+                    ->view('filament.tables.columns.owner'),
                 Tables\Columns\IconColumn::make('house')
                     ->label('Casa')
                     ->options([
@@ -216,11 +217,10 @@ class ServiceResource extends Resource
                     )
                     ->alignCenter()
                     ->tooltip('Ver casa'),
-                Tables\Columns\TextColumn::make('service_date')
-                    ->label('Data do serviço')
-                    ->dateTime('d/m/Y')
-                    ->sortable()
-                    ->icon('heroicon-o-calendar'),
+                    ViewColumn::make('house.owner.is_client')
+                        ->label('É periódico?')
+                        ->view('filament.tables.columns.periodic-service')
+                        ->alignCenter(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Preço')
                     ->icon('heroicon-o-cash'),
@@ -262,6 +262,11 @@ class ServiceResource extends Resource
                     )
                     ->alignCenter()
                     ->tooltip('Clique para editar o tipo de serviço'),
+                Tables\Columns\TextColumn::make('service_date')
+                    ->label('Data do serviço')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->icon('heroicon-o-calendar'),
                 Tables\Columns\TextColumn::make('started_at')
                     ->label('Início')
                     ->formatStateUsing(fn ($state) => substr($state, 0, -3))
