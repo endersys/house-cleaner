@@ -36,4 +36,8 @@ class Service extends Model
     public function materials() {
         return $this->hasMany(MaterialService::class);
     }
+
+    public function isLastHouseService(): bool {
+        return $this->id === $this->house->services->last()->id;
+    }
 }
