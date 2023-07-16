@@ -191,6 +191,10 @@ class ServicesRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
+                Tables\Actions\Action::make('showHouse')
+                    ->label('Ver')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (Service $record): string => route('filament.resources.services.edit', ['record' => $record])),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
