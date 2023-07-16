@@ -7,6 +7,7 @@ use App\Enums\HouseStatusEnum;
 use App\Enums\ServiceStatusEnum;
 use App\Enums\ServiceTypeEnum;
 use App\Filament\Resources\ServiceResource\Pages;
+use App\Models\House;
 use App\Models\Material;
 use App\Models\Service;
 use Filament\Resources\Form;
@@ -38,11 +39,24 @@ class ServiceResource extends Resource
                 Forms\Components\Select::make('house_id')
                     ->label('Casa')
                     ->relationship('house', 'number')
-                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "$record->number - $record->street - $record->district - $record->city"),
+                    ->reactive()
+                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "$record->number - $record->street - $record->district - $record->city")
+                    ->afterStateUpdated(function (callable $set) {
+                        $set('service_date', '');
+                    }),
                 Forms\Components\DatePicker::make('service_date')
                     ->label('Data do serviço')
                     ->required()
-                    ->displayFormat('d/m/Y'),
+                    ->displayFormat('d/m/Y')
+                    ->minDate(function (callable $get) {
+                        if ($get('house_id')) {
+                            $services = House::findOrFail($get('house_id'))->services;
+                            
+                            if (count($services)) {
+                                return $services->last()->service_date;
+                            }
+                        }
+                    }),
                 Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([

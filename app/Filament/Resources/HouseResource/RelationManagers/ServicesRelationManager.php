@@ -29,7 +29,14 @@ class ServicesRelationManager extends RelationManager
                 Forms\Components\DatePicker::make('service_date')
                     ->label('Data do serviço')
                     ->required()
-                    ->displayFormat('d/m/Y'),
+                    ->displayFormat('d/m/Y')
+                    ->minDate(function (RelationManager $livewire) {
+                        $services = $livewire->getOwnerRecord()->services;
+
+                        if (count($services)) {
+                            return $services->last()->service_date;
+                        }
+                    }),
                 Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([
@@ -59,12 +66,10 @@ class ServicesRelationManager extends RelationManager
                         if ($get('finished_at') < $state) {
                             return $set('finished_at', $state);
                         }
-                    })
-                    ->default(0),
+                    }),
                 Forms\Components\TimePicker::make('finished_at')
                     ->label('Hora do término')
-                    ->withoutSeconds()
-                    ->default(0),
+                    ->withoutSeconds(),
                 Forms\Components\Textarea::make('notes')
                     ->label('Anotações')
                     ->maxLength(65535)
