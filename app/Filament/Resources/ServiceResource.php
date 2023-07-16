@@ -23,7 +23,9 @@ class ServiceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
 
-    protected static ?string $navigationGroup = 'Cadastros';
+    protected static ?string $navigationGroup = 'Serviços';
+
+    protected static ?string $navigationLabel = 'Gerais';
 
     protected static ?string $pluralModelLabel = 'serviços';
 
@@ -137,6 +139,9 @@ class ServiceResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('house.owner.name')
+                    ->label('Proprietário')
+                    ->icon('heroicon-o-user'),
                 Tables\Columns\IconColumn::make('house')
                     ->label('Casa')
                     ->options([
@@ -193,9 +198,7 @@ class ServiceResource extends Resource
                             ])
                             ->modalWidth('xl')
                             ->modalButton('Ir para a casa')
-                            ->modalHeading(function (Service $record) {
-                                return "Casa de " . $record->house->owner->name;
-                            })
+                            ->modalHeading(fn (Service $record) => "Casa de " . $record->house->owner->name)
                     )
                     ->alignCenter()
                     ->tooltip('Ver casa'),
