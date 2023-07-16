@@ -115,7 +115,8 @@ class HouseResource extends Resource
                                 'daily' => 'Diário',
                                 'bimonthly' => 'Quinzenal',
                                 'monthly' => 'Mensal'
-                            ]),
+                            ])
+                            ->required(),
                         Forms\Components\DatePicker::make('next_service_date')
                             ->label('Data do Próximo Serviço')
                             ->displayFormat('d/m/Y')
@@ -156,9 +157,7 @@ class HouseResource extends Resource
                     ->label('Cidade'),
                 Tables\Columns\TextColumn::make('state')
                     ->label('Estado')
-                    ->formatStateUsing(function ($record, string $state) {
-                        return config("states.{$record->country}.{$state}");
-                    }),
+                    ->formatStateUsing(fn ($record, string $state) => config("states.{$record->country}.{$state}")),
                 Tables\Columns\TextColumn::make('country')
                     ->label('País')
                     ->formatStateUsing(fn (string $state): string => config("countries.{$state}")),
