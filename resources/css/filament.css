@@ -18,3 +18,7 @@
 .custom-color-danger {
     color: red;
 }
+
+#sidebar-brand {
+    align-self: center;
+}
