@@ -15,7 +15,7 @@ class PeriodicResource extends Resource
 {
     protected static ?string $model = Periodic::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationIcon = 'heroicon-o-refresh';
 
     protected static ?string $navigationGroup = 'Serviços';
 
