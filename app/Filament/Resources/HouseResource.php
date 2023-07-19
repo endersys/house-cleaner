@@ -8,16 +8,10 @@ use App\Filament\Resources\HouseResource\RelationManagers\ServicesRelationManage
 use App\Models\House;
 use App\Models\Owner;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
 use Illuminate\Support\HtmlString;
 
 class HouseResource extends Resource
@@ -93,10 +87,14 @@ class HouseResource extends Resource
                     ])
                     ->required()
                     ->hiddenOn('create'),
-                Fieldset::make('Periódicos')
+                Forms\Components\Textarea::make('notes')
+                    ->label('Anotações')
+                    ->maxLength(65535)
+                    ->columnSpanFull(),
+                Forms\Components\Fieldset::make('Periódicos')
                     ->relationship('periodicity', 'house_id')
                     ->schema([
-                        Grid::make('label')
+                        Forms\Components\Grid::make('label')
                             ->schema([
                                 Forms\Components\Placeholder::make('')
                                     ->content(
@@ -144,24 +142,46 @@ class HouseResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('owner.name')
                     ->label('Proprietário')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
                     ->icon('heroicon-o-user'),
                 Tables\Columns\TextColumn::make('number')
-                    ->label('Número'),
+                    ->label('Número')
+                    ->sortable('number')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('street')
-                    ->label('Rua'),
+                    ->label('Rua')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('postal_code')
-                    ->label('CEP'),
+                    ->label('CEP')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('district')
-                    ->label('Bairro'),
+                    ->label('Bairro')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('city')
-                    ->label('Cidade'),
+                    ->label('Cidade')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('state')
                     ->label('Estado')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
                     ->formatStateUsing(fn ($record, string $state) => config("states.{$record->country}.{$state}")),
                 Tables\Columns\TextColumn::make('country')
                     ->label('País')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
                     ->formatStateUsing(fn (string $state): string => config("countries.{$state}")),
-                BadgeColumn::make('status')
+                Tables\Columns\BadgeColumn::make('status')
                     ->enum([
                         HouseStatusEnum::Active->value => 'Ativo',
                         HouseStatusEnum::Inactive->value => 'Inativo'
@@ -172,8 +192,9 @@ class HouseResource extends Resource
                     ])
                     ->label('Status')
                     ->sortable()
+                    ->toggleable()
                     ->action(
-                        Action::make('updateStatus')
+                        Tables\Actions\Action::make('updateStatus')
                             ->label('Atualizar Status')
                             ->mountUsing(fn (Forms\ComponentContainer $form, House $record) => $form->fill([
                                 'status' => $record->status,
@@ -184,7 +205,7 @@ class HouseResource extends Resource
                                 ]);
                             })
                             ->form([
-                                Select::make('status')
+                                Forms\Components\Select::make('status')
                                     ->label('Status')
                                     ->options([
                                         HouseStatusEnum::Active->value => 'Ativo',
@@ -200,13 +221,17 @@ class HouseResource extends Resource
                     ->tooltip('Clique para editar o status'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        HouseStatusEnum::Active->value => 'Ativo',
+                        HouseStatusEnum::Inactive->value => 'Inativo'
+                    ])
             ])
             ->actions([
-                ActionGroup::make([
+                Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
-                    Action::make('changeOwner')
+                    Tables\Actions\Action::make('changeOwner')
                         ->label('Mudar Proprietário')
                         ->mountUsing(fn (Forms\ComponentContainer $form, House $record) => $form->fill([
                             'owner_id' => $record->owner_id,
@@ -217,7 +242,7 @@ class HouseResource extends Resource
                             ]);
                         })
                         ->form([
-                            Select::make('owner')
+                            Forms\Components\Select::make('owner')
                                 ->label('Proprietário Atual')
                                 ->relationship('owner', 'name')
                                 ->options(Owner::all()->pluck('name', 'id'))

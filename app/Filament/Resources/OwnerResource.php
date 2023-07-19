@@ -7,14 +7,11 @@ use App\Filament\Resources\OwnerResource\Pages;
 use App\Filament\Resources\OwnerResource\RelationManagers\HousesRelationManager;
 use App\Models\Owner;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput\Mask;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\BadgeColumn;
 
 class OwnerResource extends Resource
 {
@@ -45,7 +42,7 @@ class OwnerResource extends Resource
                     ->label('Telefone')
                     ->tel()
                     ->maxLength(255),
-                Select::make('status')
+                Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([
                         ClientStatusEnum::Active->value => 'Ativo',
@@ -54,7 +51,8 @@ class OwnerResource extends Resource
                     ->hiddenOn('create'),
                 Forms\Components\Toggle::make('is_client')
                     ->label('É Cliente?')
-                    ->required(),
+                    ->required()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -63,20 +61,32 @@ class OwnerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nome'),
+                    ->label('Nome')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
                     ->icon('heroicon-o-mail'),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Telefone')
-                    ->icon('heroicon-o-phone'),
+                    ->icon('heroicon-o-phone')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\ToggleColumn::make('is_client')
-                    ->label('É cliente?'),
+                    ->label('É cliente?')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('houses_count')
                     ->label('Número de casas')
                     ->counts('houses')
-                    ->icon('heroicon-o-home'),
-                BadgeColumn::make('status')
+                    ->icon('heroicon-o-home')
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\BadgeColumn::make('status')
                     ->enum([
                         ClientStatusEnum::Active->value => 'Ativo',
                         ClientStatusEnum::Inactive->value => 'Inativo'
@@ -87,8 +97,9 @@ class OwnerResource extends Resource
                     ])
                     ->label('Status')
                     ->sortable()
+                    ->toggleable()
                     ->action(
-                        Action::make('updateStatus')
+                        Tables\Actions\Action::make('updateStatus')
                             ->label('Atualizar Status')
                             ->mountUsing(fn (Forms\ComponentContainer $form, Owner $record) => $form->fill([
                                 'status' => $record->status,
@@ -99,7 +110,7 @@ class OwnerResource extends Resource
                                 ]);
                             })
                             ->form([
-                                Select::make('status')
+                                Forms\Components\Select::make('status')
                                     ->label('Status')
                                     ->options([
                                         ClientStatusEnum::Active->value => 'Ativo',
@@ -116,7 +127,14 @@ class OwnerResource extends Resource
                     ->tooltip('Clique para editar o status'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        ClientStatusEnum::Active->value => 'Ativo',
+                        ClientStatusEnum::Inactive->value => 'Inativo'
+                    ]),
+                Tables\Filters\TernaryFilter::make('is_client')
+                    ->label('É Cliente'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

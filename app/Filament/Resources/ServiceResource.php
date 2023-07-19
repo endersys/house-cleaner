@@ -15,8 +15,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\ViewColumn;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class ServiceResource extends Resource
@@ -79,20 +78,6 @@ class ServiceResource extends Resource
                         ServiceTypeEnum::Simple->value => 'Simples',
                         ServiceTypeEnum::Deep->value => 'Deep',
                     ]),
-                Forms\Components\TimePicker::make('started_at')
-                    ->label('Hora do início')
-                    ->withoutSeconds()
-                    ->reactive()
-                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
-                        if ($get('finished_at') < $state) {
-                            return $set('finished_at', $state);
-                        }
-                    })
-                    ->default(0),
-                Forms\Components\TimePicker::make('finished_at')
-                    ->label('Hora do término')
-                    ->withoutSeconds()
-                    ->default(0),
                 Forms\Components\Select::make('employees')
                     ->label('Colaboradores')
                     ->multiple()
@@ -121,12 +106,26 @@ class ServiceResource extends Resource
                             ->default(EmployeeStatusEnum::Active->value)
                     ])
                     ->createOptionModalHeading('Novo Colaborador'),
+                Forms\Components\TimePicker::make('started_at')
+                    ->label('Hora do início')
+                    ->withoutSeconds()
+                    ->reactive()
+                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                        if ($get('finished_at') < $state) {
+                            return $set('finished_at', $state);
+                        }
+                    })
+                    ->default(0),
+                Forms\Components\TimePicker::make('finished_at')
+                    ->label('Hora do término')
+                    ->withoutSeconds()
+                    ->default(0),
                 Forms\Components\Textarea::make('notes')
                     ->label('Anotações')
                     ->maxLength(65535)
                     ->columnSpanFull(),
                 Forms\Components\Section::make('Materiais')
-                    ->description('Materiais usados no serviço')
+                    ->description('Materiais utilizados no serviço')
                     ->collapsible()
                     ->collapsed()
                     ->schema([
@@ -154,9 +153,10 @@ class ServiceResource extends Resource
     {
         return $table
             ->columns([
-                ViewColumn::make('house.owner.name')
+                Tables\Columns\ViewColumn::make('house.owner.name')
                     ->label('Proprietário')
-                    ->view('filament.tables.columns.owner'),
+                    ->view('filament.tables.columns.owner')
+                    ->searchable(),
                 Tables\Columns\IconColumn::make('house')
                     ->label('Casa')
                     ->options([
@@ -166,7 +166,7 @@ class ServiceResource extends Resource
                         'warning',
                     ])
                     ->action(
-                        Action::make('showHouse')
+                        Tables\Actions\Action::make('showHouse')
                             ->mountUsing(fn (Forms\ComponentContainer $form, Service $record) => $form->fill([
                                 'number' => $record->house->number,
                                 'postal_code' => $record->house->postal_code,
@@ -216,13 +216,16 @@ class ServiceResource extends Resource
                             ->modalHeading(fn (Service $record) => "Casa de " . $record->house->owner->name)
                     )
                     ->alignCenter()
+                    ->toggleable()
                     ->tooltip('Ver casa'),
-                    ViewColumn::make('house.owner.is_client')
-                        ->label('É periódico?')
-                        ->view('filament.tables.columns.periodic-service')
-                        ->alignCenter(),
+                Tables\Columns\ViewColumn::make('house.owner.is_client')
+                    ->label('É periódico?')
+                    ->view('filament.tables.columns.periodic-service')
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Preço')
+                    ->searchable()
+                    ->toggleable()
                     ->icon('heroicon-o-cash'),
                 Tables\Columns\BadgeColumn::make('type')
                     ->enum([
@@ -235,8 +238,9 @@ class ServiceResource extends Resource
                     ])
                     ->label('Tipo')
                     ->sortable()
+                    ->toggleable()
                     ->action(
-                        Action::make('updateType')
+                        Tables\Actions\Action::make('updateType')
                             ->label('Atualizar Tipo de Serviço')
                             ->mountUsing(fn (Forms\ComponentContainer $form, Service $record) => $form->fill([
                                 'type' => $record->type,
@@ -266,15 +270,20 @@ class ServiceResource extends Resource
                     ->label('Data do serviço')
                     ->dateTime('d/m/Y')
                     ->sortable()
+                    ->toggleable()
                     ->icon('heroicon-o-calendar'),
                 Tables\Columns\TextColumn::make('started_at')
                     ->label('Início')
                     ->formatStateUsing(fn ($state) => substr($state, 0, -3))
-                    ->icon('heroicon-o-clock'),
+                    ->icon('heroicon-o-clock')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('finished_at')
                     ->label('Fim')
                     ->formatStateUsing(fn ($state) => substr($state, 0, -3))
-                    ->icon('heroicon-o-clock'),
+                    ->icon('heroicon-o-clock')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\BadgeColumn::make('status')
                     ->enum([
                         ServiceStatusEnum::Pending->value => 'Pendente',
@@ -296,8 +305,9 @@ class ServiceResource extends Resource
                     ])
                     ->label('Status')
                     ->sortable()
+                    ->toggleable()
                     ->action(
-                        Action::make('updateStatus')
+                        Tables\Actions\Action::make('updateStatus')
                             ->label('Atualizar Status')
                             ->mountUsing(fn (Forms\ComponentContainer $form, Service $record) => $form->fill([
                                 'status' => $record->status,
@@ -330,7 +340,71 @@ class ServiceResource extends Resource
                     ->tooltip('Clique para editar o status'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Tipo')
+                    ->options([
+                        'simple' => 'Simples',
+                        'deep' => 'Deep',
+                    ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        ServiceStatusEnum::Pending->value => 'Pendente',
+                        ServiceStatusEnum::InProgress->value => 'Em andamento',
+                        ServiceStatusEnum::Done->value => 'Concluído',
+                        ServiceStatusEnum::DoneWithPendency->value => 'Concluído com pendência',
+                        ServiceStatusEnum::Rescheduled->value => 'Reagendado',
+                        ServiceStatusEnum::Canceled->value => 'Cancelado',
+                        ServiceStatusEnum::Expired->value => 'Expirado',
+                    ]),
+                Tables\Filters\Filter::make('service_date')
+                    ->form([
+                        Forms\Components\Fieldset::make('Data do Serviço')
+                            ->schema([
+                                Forms\Components\DatePicker::make('from')
+                                    ->label('De')
+                                    ->displayFormat('d/m/Y')
+                                    ,
+                                Forms\Components\DatePicker::make('to')
+                                    ->label('Até')
+                                    ->displayFormat('d/m/Y'),
+                            ])
+                            ->columns(1)
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('service_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('service_date', '<=', $date),
+                            );
+                    }),
+                Tables\Filters\Filter::make('started_at_time')
+                    ->form([
+                        Forms\Components\Fieldset::make('Hora do início')
+                            ->schema([
+                                Forms\Components\TimePicker::make('from')
+                                    ->label('De:')
+                                    ->withoutSeconds(),
+                                Forms\Components\TimePicker::make('to')
+                                    ->label('Até:')
+                                    ->withoutSeconds()
+                            ])
+                            ->columns(2)
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $time): Builder => $query->where('started_at', '>=', $time),
+                            )
+                            ->when(
+                                $data['to'],
+                                fn (Builder $query, $time): Builder => $query->where('started_at', '<=', $time),
+                            );
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -5,21 +5,11 @@ namespace App\Filament\Resources;
 use App\Enums\MaterialStatusEnum;
 use App\Filament\Resources\MaterialResource\Pages;
 use App\Models\Material;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Form;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables;
 
 class MaterialResource extends Resource
 {
@@ -37,62 +27,63 @@ class MaterialResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')
+                Forms\Components\TextInput::make('name')
                     ->label('Nome')
                     ->required()
                     ->maxLength(255),
-                TextInput::make('price')
+                Forms\Components\TextInput::make('price')
                     ->label('Preço'),
-                TextInput::make('reference')
+                Forms\Components\TextInput::make('reference')
                     ->label('Referência')
                     ->maxLength(255),
-                Select::make('measurement_unit')
+                Forms\Components\Select::make('measurement_unit')
                     ->label('Unidade de medida')
                     ->options(config('units')),
-                DatePicker::make('expiration_date')
+                Forms\Components\DatePicker::make('expiration_date')
                     ->label('Data de vencimento')
                     ->displayFormat('d/m/Y')
                     ->minDate(now()),
-                TextInput::make('shelf')
+                Forms\Components\TextInput::make('shelf')
                     ->label('Prateleira')
                     ->maxLength(255),
-                Select::make('categories')
+                Forms\Components\Select::make('categories')
                     ->label('Categorias')
                     ->multiple()
                     ->relationship('categories', 'name')
                     ->preload()
                     ->createOptionForm([
-                        TextInput::make('name')
+                        Forms\Components\TextInput::make('name')
                             ->label('Nome')
                             ->required(),
                     ])
                     ->createOptionModalHeading('Nova Categoria'),
-                Select::make('suppliers')
+                Forms\Components\Select::make('suppliers')
                     ->label('Fornecedores')
                     ->multiple()
                     ->relationship('suppliers', 'name')
                     ->preload()
                     ->createOptionForm([
-                        TextInput::make('name')
+                        Forms\Components\TextInput::make('name')
                             ->label('Nome')
                             ->required(),
                     ])
                     ->createOptionModalHeading('Novo Fornecedor'),
-                TextInput::make('stock')
+                Forms\Components\TextInput::make('stock')
                     ->label('Quantidade')
                     ->numeric()
                     ->minValue(0)
                     ->default(0),
-                Select::make('status')
+                Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([
                         MaterialStatusEnum::Active->value => 'Ativo',
                         MaterialStatusEnum::Inactive->value => 'Inativo'
                     ])
                     ->hiddenOn('create'),
-                Textarea::make('notes')
+                Forms\Components\Textarea::make('notes')
                     ->label('Anotações')
-                    ->maxLength(65535),
+                    ->maxLength(65535)
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -100,36 +91,45 @@ class MaterialResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('price')
+                Tables\Columns\TextColumn::make('price')
                     // ->prefix(fn () => config('app.locale') === 'pt_BR' ? 'R$' : '$')
                     ->label('Preço')
                     ->sortable()
+                    ->toggleable()
                     ->icon('heroicon-o-cash'),
-                TextColumn::make('stock.quantity')
+                Tables\Columns\TextColumn::make('stock.quantity')
                     ->formatStateUsing(function (string $state, $record) {
                         $quantity = $state . ' ' . config('units.' . $record->measurement_unit);
                
                         return $quantity .= $state > 1 ? 'S' : '';
                     })
                     ->label('Quantidade')
+                    ->searchable()
+                    ->toggleable()
                     ->sortable(),
-                TextColumn::make('reference')
+                Tables\Columns\TextColumn::make('reference')
                     ->label('Referencia')
+                    ->searchable()
+                    ->toggleable()
                     ->sortable(),
-                TextColumn::make('expiration_date')
+                Tables\Columns\TextColumn::make('expiration_date')
                     ->label('Data de vencimento')
                     ->dateTime('d/m/Y')
                     ->sortable()
+                    ->searchable()
+                    ->toggleable()
                     ->icon('heroicon-o-calendar'),
-                TextColumn::make('shelf')
+                Tables\Columns\TextColumn::make('shelf')
                     ->label('Prateleira')
                     ->sortable()
+                    ->searchable()
+                    ->toggleable()
                     ->icon('heroicon-o-table'),
-                BadgeColumn::make('status')
+                Tables\Columns\BadgeColumn::make('status')
                     ->enum([
                         MaterialStatusEnum::Active->value => 'Ativo',
                         MaterialStatusEnum::Inactive->value => 'Inativo'
@@ -140,8 +140,9 @@ class MaterialResource extends Resource
                     ])
                     ->label('Status')
                     ->sortable()
+                    ->toggleable()
                     ->action(
-                        Action::make('updateStatus')
+                        Tables\Actions\Action::make('updateStatus')
                             ->label('Atualizar Status')
                             ->mountUsing(fn (Forms\ComponentContainer $form, Material $record) => $form->fill([
                                 'status' => $record->status,
@@ -152,7 +153,7 @@ class MaterialResource extends Resource
                                 ]);
                             })
                             ->form([
-                                Select::make('status')
+                                Forms\Components\Select::make('status')
                                     ->label('Status')
                                     ->options([
                                         MaterialStatusEnum::Active->value => 'Ativo',
@@ -168,16 +169,20 @@ class MaterialResource extends Resource
                     ->tooltip('Clique para editar o status'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        MaterialStatusEnum::Active->value => 'Ativo',
+                        MaterialStatusEnum::Inactive->value => 'Inativo'
+                    ])
             ])
             ->actions([
-                ActionGroup::make([
-                    EditAction::make(),
-                    DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                 ])
             ])
             ->bulkActions([
-                DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
     

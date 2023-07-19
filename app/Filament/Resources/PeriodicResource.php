@@ -8,8 +8,8 @@ use App\Models\Periodic;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Forms;
+use Illuminate\Database\Eloquent\Builder;
 
 class PeriodicResource extends Resource
 {
@@ -29,6 +29,7 @@ class PeriodicResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('house.owner.name')
                     ->label('Proprietário')
+                    ->searchable()
                     ->icon('heroicon-o-user'),
                 Tables\Columns\IconColumn::make('house')
                     ->label('Casa')
@@ -39,7 +40,7 @@ class PeriodicResource extends Resource
                         'warning',
                     ])
                     ->action(
-                        Action::make('showHouse')
+                        Tables\Actions\Action::make('showHouse')
                             ->mountUsing(fn (Forms\ComponentContainer $form, Periodic $record) => $form->fill([
                                 'number' => $record->house->number,
                                 'postal_code' => $record->house->postal_code,
@@ -89,6 +90,7 @@ class PeriodicResource extends Resource
                             ->modalHeading(fn (Periodic $record) => "Casa de " . $record->house->owner->name)
                     )
                     ->alignCenter()
+                    ->toggleable()
                     ->tooltip('Ver casa'),
                 Tables\Columns\TextColumn::make('periodicity')
                     ->label('Periodicidade')
@@ -98,24 +100,58 @@ class PeriodicResource extends Resource
                             'bimonthly' => 'Quinzenal',
                             'monthly' => 'Mensal'
                         };
-                    }),
+                    })
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('can_alert')
                     ->label('Receber alerta?')
                     ->boolean()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('next_service_date')
                     ->label('Próximo Serviço')
                     ->date('d/m/Y')
-                    ->icon('heroicon-o-calendar'),
+                    ->icon('heroicon-o-calendar')
+                    ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('periodicity')
+                    ->label('Periodicidade')
+                    ->options([
+                        'daily' => 'Diário',
+                        'bimonthly' => 'Quinzenal',
+                        'monthly' => 'Mensal'
+                    ]),
+                Tables\Filters\Filter::make('next_service_date')
+                    ->form([
+                        Forms\Components\Fieldset::make('Próximo Serviço')
+                            ->schema([
+                                Forms\Components\DatePicker::make('from')
+                                    ->label('De')
+                                    ->displayFormat('d/m/Y')
+                                    ,
+                                Forms\Components\DatePicker::make('to')
+                                    ->label('Até')
+                                    ->displayFormat('d/m/Y'),
+                            ])
+                            ->columns(1)
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('next_service_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('next_service_date', '<=', $date),
+                            );
+                    })
             ])
             ->actions([
                 //
             ])
             ->bulkActions([
-                //
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
     

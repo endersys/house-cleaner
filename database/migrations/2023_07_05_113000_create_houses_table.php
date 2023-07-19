@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('state')->nullable();
             $table->string('country')->nullable();
             $table->string('status')->default(HouseStatusEnum::Active->value);
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

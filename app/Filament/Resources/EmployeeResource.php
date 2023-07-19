@@ -55,11 +55,17 @@ class EmployeeResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nome'),
+                    ->label('Nome')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Email'),
+                    ->label('Email')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telefone'),
+                    ->label('Telefone')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\BadgeColumn::make('status')
                     ->enum([
                         EmployeeStatusEnum::Active->value => 'Ativo',
@@ -100,7 +106,11 @@ class EmployeeResource extends Resource
                     ->tooltip('Clique para editar o status'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        EmployeeStatusEnum::Active->value => 'Ativo',
+                        EmployeeStatusEnum::Inactive->value => 'Inativo'
+                    ])
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
