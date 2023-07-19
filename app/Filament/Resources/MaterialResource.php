@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
+use Illuminate\Database\Eloquent\Collection;
 
 class MaterialResource extends Resource
 {
@@ -183,6 +184,24 @@ class MaterialResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkAction::make('massStatusChange')
+                    ->label('Alterar status')
+                    ->action(function (Collection $records, array $data): void {
+                        $records->each(fn ($record) => $record->update(['status' => data_get($data, 'status')]));
+                    })
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                MaterialStatusEnum::Active->value => 'Ativo',
+                                MaterialStatusEnum::Inactive->value => 'Inativo'
+                            ])
+                            ->required(),
+                    ])
+                    ->modalWidth('sm')
+                    ->modalHeading('Atualizar Status')
+                    ->modalButton('Salvar')
+                    ->icon('heroicon-o-refresh'),
             ]);
     }
     

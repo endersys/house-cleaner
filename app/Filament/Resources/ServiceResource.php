@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class ServiceResource extends Resource
@@ -413,6 +414,47 @@ class ServiceResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkAction::make('massStatusChange')
+                    ->label('Alterar status')
+                    ->action(function (Collection $records, array $data): void {
+                        $records->each(fn ($record) => $record->update(['status' => data_get($data, 'status')]));
+                    })
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                ServiceStatusEnum::Pending->value => 'Pendente',
+                                ServiceStatusEnum::InProgress->value => 'Em andamento',
+                                ServiceStatusEnum::Done->value => 'Concluído',
+                                ServiceStatusEnum::DoneWithPendency->value => 'Concluído com pendência',
+                                ServiceStatusEnum::Rescheduled->value => 'Reagendado',
+                                ServiceStatusEnum::Canceled->value => 'Cancelado',
+                                ServiceStatusEnum::Expired->value => 'Expirado',
+                            ])
+                            ->required(),
+                    ])
+                    ->modalWidth('sm')
+                    ->modalHeading('Atualizar Status')
+                    ->modalButton('Salvar')
+                    ->icon('heroicon-o-refresh'),
+                Tables\Actions\BulkAction::make('massTypeChange')
+                    ->label('Alterar tipo')
+                    ->action(function (Collection $records, array $data): void {
+                        $records->each(fn ($record) => $record->update(['type' => data_get($data, 'type')]));
+                    })
+                    ->form([
+                        Forms\Components\Select::make('type')
+                            ->label('Tipo')
+                            ->options([
+                                'simple' => 'Simples',
+                                'deep' => 'Deep',
+                            ])
+                            ->required(),
+                    ])
+                    ->modalWidth('sm')
+                    ->modalHeading('Atualizar Tipo de Serviço')
+                    ->modalButton('Salvar')
+                    ->icon('heroicon-o-refresh'),
             ]);
     }
     

@@ -151,7 +151,7 @@ class PeriodicResource extends Resource
                 //
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                // Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
     
