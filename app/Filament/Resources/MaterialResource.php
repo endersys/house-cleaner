@@ -107,7 +107,7 @@ class MaterialResource extends Resource
                
                         return $quantity .= $state > 1 ? 'S' : '';
                     })
-                    ->label('Quantidade')
+                    ->label('Estoque')
                     ->searchable()
                     ->toggleable()
                     ->sortable(),

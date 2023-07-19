@@ -347,6 +347,7 @@ class ServiceResource extends Resource
                         'deep' => 'Deep',
                     ]),
                 Tables\Filters\SelectFilter::make('status')
+                    ->multiple()
                     ->options([
                         ServiceStatusEnum::Pending->value => 'Pendente',
                         ServiceStatusEnum::InProgress->value => 'Em andamento',
