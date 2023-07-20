@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HouseResource\RelationManagers;
 
+use App\Enums\EmployeeStatusEnum;
 use App\Enums\ServiceStatusEnum;
 use App\Enums\ServiceTypeEnum;
 use App\Models\Service;
@@ -11,6 +12,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Illuminate\Database\Eloquent\Builder;
 
 class ServicesRelationManager extends RelationManager
 {
@@ -70,6 +72,35 @@ class ServicesRelationManager extends RelationManager
                 Forms\Components\TimePicker::make('finished_at')
                     ->label('Hora do término')
                     ->withoutSeconds(),
+                Forms\Components\Select::make('employees')
+                    ->label('Colaboradores')
+                    ->multiple()
+                    ->relationship('employees', 'name', fn (Builder $query) => $query->whereStatus('active'))
+                    ->preload()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->email()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('phone')
+                            ->mask(fn (Forms\Components\TextInput\Mask $mask) => $mask->pattern('(000)0 0000-00-00'))
+                            ->label('Telefone')
+                            ->tel()
+                            ->maxLength(255),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                EmployeeStatusEnum::Active->value => 'Ativo',
+                                EmployeeStatusEnum::Inactive->value => 'Inativo'
+                            ])
+                            ->required()
+                            ->default(EmployeeStatusEnum::Active->value)
+                    ])
+                    ->createOptionModalHeading('Novo Colaborador')
+                    ->columnSpanFull(),
                 Forms\Components\Textarea::make('notes')
                     ->label('Anotações')
                     ->maxLength(65535)
