@@ -39,7 +39,7 @@ class ServiceResource extends Resource
             ->schema([
                 Forms\Components\Select::make('house_id')
                     ->label('Casa')
-                    ->relationship('house', 'number')
+                    ->relationship('house', 'number', fn (Builder $query) => $query->whereStatus('active'))
                     ->reactive()
                     ->getOptionLabelFromRecordUsing(fn (Model $record) => "$record->number - $record->street - $record->district - $record->city")
                     ->afterStateUpdated(function (callable $set) {
@@ -82,7 +82,7 @@ class ServiceResource extends Resource
                 Forms\Components\Select::make('employees')
                     ->label('Colaboradores')
                     ->multiple()
-                    ->relationship('employees', 'name')
+                    ->relationship('employees', 'name', fn (Builder $query) => $query->whereStatus('active'))
                     ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('name')
@@ -115,12 +115,10 @@ class ServiceResource extends Resource
                         if ($get('finished_at') < $state) {
                             return $set('finished_at', $state);
                         }
-                    })
-                    ->default(0),
+                    }),
                 Forms\Components\TimePicker::make('finished_at')
                     ->label('Hora do término')
-                    ->withoutSeconds()
-                    ->default(0),
+                    ->withoutSeconds(),
                 Forms\Components\Textarea::make('notes')
                     ->label('Anotações')
                     ->maxLength(65535)
@@ -136,7 +134,7 @@ class ServiceResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('material_id')
                                     ->label('Material')
-                                    ->options(Material::all()->pluck('name', 'id'))
+                                    ->options(Material::whereStatus('active')->pluck('name', 'id'))
                                     ->searchable()
                                     ->preload(),
                                 Forms\Components\TextInput::make('quantity')
@@ -146,6 +144,7 @@ class ServiceResource extends Resource
                                     ->default(0)
                             ])
                             ->createItemButtonLabel('Adicionar Material')
+                            ->defaultItems(0)
                     ])
             ]);
     }

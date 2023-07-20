@@ -34,7 +34,7 @@ class HouseResource extends Resource
                     ->reactive()
                     ->label('Proprietário')
                     ->relationship('owner', 'name')
-                    ->options(Owner::all()->pluck('name', 'id'))
+                    ->options(Owner::whereStatus('active')->pluck('name', 'id'))
                     ->createOptionForm([
                         Forms\Components\TextInput::make('name')
                             ->label('Nome')
@@ -245,7 +245,7 @@ class HouseResource extends Resource
                             Forms\Components\Select::make('owner')
                                 ->label('Proprietário Atual')
                                 ->relationship('owner', 'name')
-                                ->options(Owner::all()->pluck('name', 'id'))
+                                ->options(Owner::whereStatus('active')->pluck('name', 'id'))
                                 ->required(),
                         ])
                         ->modalWidth('md')
