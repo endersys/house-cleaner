@@ -10,6 +10,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Forms;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class PeriodicResource extends Resource
 {
@@ -107,10 +108,28 @@ class PeriodicResource extends Resource
                     ->boolean()
                     ->alignCenter()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('next_service_date')
+                Tables\Columns\BadgeColumn::make('next_service_date')
                     ->label('Próximo Serviço')
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar')
+                    ->color(function ($record) {
+                        if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                            return 'danger';
+                        }
+                    })
+                    ->icon(function ($record) {
+                        if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                            return 'heroicon-o-exclamation';
+                        }
+
+                        return 'heroicon-o-calendar';
+                    })
+                    ->tooltip(function (Model $record) { 
+                        if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                            return 'Serviço próximo';
+                        }
+                    })
+                    ->alignCenter()
                     ->sortable(),
             ])
             ->filters([
