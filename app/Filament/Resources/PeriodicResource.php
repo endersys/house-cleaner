@@ -113,20 +113,26 @@ class PeriodicResource extends Resource
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar')
                     ->color(function ($record) {
-                        if(count_days_between_now_and_date($record->next_service_date) < 5) {
-                            return 'danger';
+                        if ($record->next_service_date) {
+                            if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                                return 'danger';
+                            }
                         }
                     })
                     ->icon(function ($record) {
-                        if(count_days_between_now_and_date($record->next_service_date) < 5) {
-                            return 'heroicon-o-exclamation';
+                        if ($record->next_service_date) {
+                            if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                                return 'heroicon-o-exclamation';
+                            }
                         }
 
                         return 'heroicon-o-calendar';
                     })
                     ->tooltip(function (Model $record) { 
-                        if(count_days_between_now_and_date($record->next_service_date) < 5) {
-                            return 'Serviço próximo';
+                        if ($record->next_service_date) {
+                            if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                                return 'Serviço próximo';
+                            }
                         }
                     })
                     ->alignCenter()
@@ -167,7 +173,12 @@ class PeriodicResource extends Resource
                     })
             ])
             ->actions([
-                //
+                Tables\Actions\Action::make('createService')
+                    ->label('Fazer Serviço')
+                    ->url(fn ($record): string => route('filament.resources.services.create', ['record' => $record->house_id])),
+                    // ->action(function ($record, array $data) {
+                    //     dd($record);
+                    // })
             ])
             ->bulkActions([
                 // Tables\Actions\DeleteBulkAction::make(),
