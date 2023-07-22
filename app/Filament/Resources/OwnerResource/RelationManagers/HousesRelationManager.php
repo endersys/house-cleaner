@@ -126,14 +126,12 @@ class HousesRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                ActionGroup::make([
-                    Action::make('showHouse')
-                        ->label('Ver')
-                        ->icon('heroicon-o-eye')
-                        ->url(fn (House $record): string => route('filament.resources.houses.edit', ['record' => $record])),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                ])
+                Action::make('showHouse')
+                    ->label('Ver')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (House $record): string => route('filament.resources.houses.edit', ['record' => $record])),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
