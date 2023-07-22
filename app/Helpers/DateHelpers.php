@@ -19,9 +19,9 @@ if (!function_exists('subtract_dates')) {
 if (!function_exists('count_days_between_now_and_date')) {
     function count_days_between_now_and_date($endDate): int {
         $startDate = Carbon::createFromFormat('Y-m-d', Carbon::now()->format('Y-m-d'));
-        $endDate = Carbon::createFromFormat('Y-m-d', $endDate);
+        $finishDate = Carbon::createFromFormat('Y-m-d', $endDate);
 
-        $diffInDays = $startDate->diffInDays($endDate);
+        $diffInDays = $startDate->diffInDays($finishDate);
 
         return $diffInDays;
     }
