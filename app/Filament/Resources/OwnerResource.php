@@ -53,6 +53,8 @@ class OwnerResource extends Resource
                 Forms\Components\Toggle::make('is_client')
                     ->label('É Cliente?')
                     ->required()
+                    ->onIcon('heroicon-s-user-remove')
+                    ->offIcon('heroicon-s-user-add')
                     ->columnSpanFull(),
             ]);
     }
@@ -80,6 +82,8 @@ class OwnerResource extends Resource
                 Tables\Columns\ToggleColumn::make('is_client')
                     ->label('É cliente?')
                     ->sortable()
+                    ->onIcon('heroicon-s-user-remove')
+                    ->offIcon('heroicon-s-user-add')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('houses_count')
                     ->label('Número de casas')
