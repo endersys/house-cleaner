@@ -114,14 +114,14 @@ class PeriodicResource extends Resource
                     ->icon('heroicon-o-calendar')
                     ->color(function ($record) {
                         if ($record->next_service_date) {
-                            if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                            if(count_days_between_now_and_date($record->next_service_date) <= 3) {
                                 return 'danger';
                             }
                         }
                     })
                     ->icon(function ($record) {
                         if ($record->next_service_date) {
-                            if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                            if(count_days_between_now_and_date($record->next_service_date) <= 3) {
                                 return 'heroicon-o-exclamation';
                             }
                         }
@@ -130,7 +130,7 @@ class PeriodicResource extends Resource
                     })
                     ->tooltip(function (Model $record) { 
                         if ($record->next_service_date) {
-                            if(count_days_between_now_and_date($record->next_service_date) < 5) {
+                            if(count_days_between_now_and_date($record->next_service_date) <= 3) {
                                 return 'Serviço próximo';
                             }
                         }
