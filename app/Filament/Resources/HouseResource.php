@@ -118,7 +118,8 @@ class HouseResource extends Resource
                         Forms\Components\DatePicker::make('next_service_date')
                             ->label('Data do Próximo Serviço')
                             ->displayFormat('d/m/Y')
-                            ->minDate(now()),
+                            ->minDate(now())
+                            ->disabled(),
                         Forms\Components\Toggle::make('can_alert')
                             ->label('Gerar alerta do próximo serviço?')
                             ->required(),
