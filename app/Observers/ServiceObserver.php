@@ -11,8 +11,7 @@ class ServiceObserver
         ServiceHelpers::updateNextServiceDate($service, $service->service_date);
     }
 
-    public function updated(Service $service): void
-    {
+    public function updated(Service $service): void {
         ServiceHelpers::updateNextServiceDate($service, $service->getOriginal('service_date'));
     }
 }
