@@ -11,8 +11,7 @@ class NotifyWhenExpiring {
     public function __invoke()
     {
         $periodics = Periodic::whereHas(
-            'house', fn ($query) => 
-            $query->whereStatus('active')
+            'house', fn ($query) => $query->whereStatus('active')
         )
         ->whereCanAlert(1)
         ->get();
@@ -26,7 +25,7 @@ class NotifyWhenExpiring {
                         $recipient->notify(
                             Notification::make()
                                 ->title('Próximo serviço chegando.')
-                                ->body('O serviço na casa de **' . $periodic->house->owner->name . '** já é amanhã!')
+                                ->body('O serviço na casa de **' . $periodic->house->owner->name . '** é amanhã!')
                                 ->icon('heroicon-o-exclamation')
                                 ->iconColor('warning')
                                 ->actions([

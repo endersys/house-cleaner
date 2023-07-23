@@ -112,14 +112,14 @@ class PeriodicResource extends Resource
                     ->label('Próximo Serviço')
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar')
-                    ->color(function ($record) {
+                    ->color(function (Model $record) {
                         if ($record->next_service_date) {
                             if(count_days_between_now_and_date($record->next_service_date) <= 3) {
                                 return 'danger';
                             }
                         }
                     })
-                    ->icon(function ($record) {
+                    ->icon(function (Model $record) {
                         if ($record->next_service_date) {
                             if(count_days_between_now_and_date($record->next_service_date) <= 3) {
                                 return 'heroicon-o-exclamation';

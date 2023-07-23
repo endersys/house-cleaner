@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Periodic extends Model
 {
@@ -16,7 +17,7 @@ class Periodic extends Model
         'can_alert'
     ];
 
-    public function house() {
+    public function house(): BelongsTo {
         return $this->belongsTo(House::class);
     }
 }
