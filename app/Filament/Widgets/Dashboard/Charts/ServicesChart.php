@@ -11,8 +11,6 @@ class ServicesChart extends LineChartWidget
 {
     protected static ?string $heading = 'Chart';
 
-    public ?string $filter = 'today';
-
     protected function getHeading(): string
     {
         return 'Serviços';
